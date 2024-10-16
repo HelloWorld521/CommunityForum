@@ -1,0 +1,31 @@
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Build files
+build/
+dist/
+*.out
+*.class
+
+# Log files
+logs/
+
+# Dependency directories
+vendor/
+node_modules/
+
+# Docker
+.env
+.env.*
+.dockerenv
+Dockerfile.*
+docker-compose.*
+.docker/
+.dockerignore
+
+# OS generated
+.DS_Store
+Thumbs.db
