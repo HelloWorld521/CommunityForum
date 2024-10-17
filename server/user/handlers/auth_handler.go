@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"community/user/models"
+	"community/user/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
-	"your_project_path/common/models"
-	"your_project_path/user-service/services"
 )
 
 type AuthService struct {

@@ -1,15 +1,15 @@
 package main
 
 import (
+	"community/user/handlers"
+	"community/user/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"user/handlers"
-	"user/models"
 )
 
 func main() {
-	dsn := "community_user:your_password@tcp(db:3306)/community?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:123456@tcp(192.168.3.3:13306)/community?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")

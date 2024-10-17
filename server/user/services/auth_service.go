@@ -1,11 +1,13 @@
 package services
 
 import (
+	"community/user/models"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"gorm.io/gorm"
-	"your_project_path/common/models"
 )
 
 var jwtKey = []byte("your_secret_key")
@@ -26,26 +28,33 @@ func GenerateToken(userID uint) (string, error) {
 	return token.SignedString(jwtKey)
 }
 
+// RegisterUser 注册新用户
 func RegisterUser(db *gorm.DB, user *models.User) (string, error) {
-	// Check if user already exists
+	// 检查是否已经存在具有相同电子邮件的用户
 	var existingUser models.User
-	if db.Where("email = ?", user.Email).First(&existingUser).RecordNotFound() {
-		// Hash the password
+	result := db.Where("email = ?", user.Email).First(&existingUser)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		// 对密码进行哈希处理
 		hashedPassword, err := HashPassword(user.PasswordHash)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to hash password: %w", err)
 		}
 		user.PasswordHash = hashedPassword
 
-		// Save the user to the database
+		// 将新用户保存到数据库
 		if err := db.Create(user).Error; err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to create user: %w", err)
 		}
 
 		return "User registered successfully", nil
-	} else {
-		return "", fmt.Errorf("user with this email already exists")
+	} else if result.Error != nil {
+		// 如果有其他类型的错误
+		return "", fmt.Errorf("database query failed: %w", result.Error)
 	}
+
+	// 如果找到了具有相同电子邮件的用户
+	return "", fmt.Errorf("user with email %s already exists", user.Email)
 }
 
 func LoginUser(db *gorm.DB, email, password string) (string, error) {
