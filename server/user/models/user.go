@@ -1,10 +1,13 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
+// User 用户模型
 type User struct {
 	gorm.Model
-	Username     string `json:"username" gorm:"unique"`
-	Email        string `json:"email" gorm:"unique"`
-	PasswordHash string `json:"password_hash"`
+	Username     string `gorm:"unique;not null" json:"username"`
+	Email        string `gorm:"unique;not null" json:"email"`
+	PasswordHash string `gorm:"not null" json:"password"`
 }

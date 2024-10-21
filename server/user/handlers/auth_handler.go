@@ -4,22 +4,18 @@ import (
 	"community/user/models"
 	"community/user/services"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
 )
 
-type AuthService struct {
-	DB *gorm.DB
-}
-
-func (s *AuthService) Register(c *gin.Context) {
+// RegisterHandler 处理用户注册请求
+func (h *AuthHandler) Register(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 		return
 	}
 
-	message, err := services.RegisterUser(s.DB, &user)
+	message, err := h.AuthService.RegisterUser(&user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -28,22 +24,27 @@ func (s *AuthService) Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": message})
 }
 
-func (s *AuthService) Login(c *gin.Context) {
-	var loginRequest struct {
-		Email    string `json:"email" binding:"required"`
-		Password string `json:"password" binding:"required"`
+// LoginHandler 处理用户登录请求
+func (h *AuthHandler) Login(c *gin.Context) {
+	var loginData struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
-
-	if err := c.ShouldBindJSON(&loginRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.ShouldBindJSON(&loginData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 		return
 	}
 
-	token, err := services.LoginUser(s.DB, loginRequest.Email, loginRequest.Password)
+	token, err := h.AuthService.LoginUser(loginData.Email, loginData.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+// AuthHandler 是处理认证请求的结构体
+type AuthHandler struct {
+	AuthService *services.AuthService
 }
