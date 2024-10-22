@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"community/user/models"
-	"community/user/services"
+	"community/models"
+	"community/services"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-// RegisterHandler 处理用户注册请求
+// Register 处理用户注册请求
 func (h *AuthHandler) Register(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -24,7 +24,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": message})
 }
 
-// LoginHandler 处理用户登录请求
+// Login 处理用户登录请求
 func (h *AuthHandler) Login(c *gin.Context) {
 	var loginData struct {
 		Email    string `json:"email"`

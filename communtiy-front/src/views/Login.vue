@@ -4,11 +4,11 @@
     <form @submit.prevent="onSubmit">
       <div>
         <label for="email">Email:</label>
-        <input v-model="credentials.email" type="email" id="email" required />
+        <input v-model="credentials.email" type="email" id="email" required/>
       </div>
       <div>
         <label for="password">Password:</label> <!-- 修复for属性 -->
-        <input v-model="credentials.password" type="password" id="password" required />
+        <input v-model="credentials.password" type="password" id="password" required/>
       </div>
       <button type="submit">Login</button>
     </form>
@@ -16,10 +16,10 @@
 </template>
 
 <script>
-import { reactive, computed } from 'vue';
+import {computed, reactive} from 'vue';
 import axios from 'axios';
 import useVuelidate from '@vuelidate/core';
-import { required, email } from '@vuelidate/validators';
+import {email, required} from '@vuelidate/validators';
 
 export default {
   name: 'UserLogin', // 多词形式
@@ -32,28 +32,30 @@ export default {
     const rules = computed(() => {
       return {
         credentials: {
-          email: { required, email },
-          password: { required }
+          email: {required, email},
+          password: {required}
         }
       };
     });
 
-    const v$ = useVuelidate(rules, { credentials });
+    const v$ = useVuelidate(rules, {credentials});
 
     const onSubmit = () => {
       v$.value.$touch();
       if (!v$.value.$error) {
         axios.post('http://localhost:8081/api/v1/login', credentials)
-          .then(response => {
-            const token = response.data.token;
-            localStorage.setItem('token', token);
-            alert('Login successful!');
-            // Redirect to a protected route or dashboard
-          })
-          .catch(error => {
-            console.error('There was an error!', error);
-            alert('Login failed. Please check your credentials and try again.');
-          });
+            .then(response => {
+              const token = response.data.token;
+              localStorage.setItem('token', token);
+              alert('Login successful!');
+              // Redirect to a protected route or dashboard
+              this.$router.push('/dashboard'); // 使用 Vue Router 进行重定向
+            })
+            .catch(error => {
+              console.error('There was an error!', error);
+              // 根据错误类型更新错误消息
+              alert('Login failed. ' + (error.response?.data.message || 'Please check your credentials and try again.'));
+            });
       }
     };
 
@@ -72,14 +74,17 @@ export default {
   max-width: 400px;
   margin: 0 auto;
 }
+
 form div {
   margin-bottom: 15px;
 }
+
 input {
   width: 100%;
   padding: 8px;
   box-sizing: border-box;
 }
+
 button {
   width: 100%;
   padding: 10px;
@@ -88,6 +93,7 @@ button {
   border: none;
   cursor: pointer;
 }
+
 button:hover {
   opacity: 0.8;
 }

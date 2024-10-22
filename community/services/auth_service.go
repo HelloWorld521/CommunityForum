@@ -1,12 +1,11 @@
 package services
 
 import (
-	"community/user/models"
-	"crypto/sha256"
-	"encoding/base64"
+	"community/models"
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"log"
 )
@@ -19,13 +18,8 @@ type AuthService struct {
 var jwtKey = []byte("your_secret_key")
 
 func HashPassword(password string) (string, error) {
-	hash := sha256.New()
-	_, err := hash.Write([]byte(password))
-	if err != nil {
-		return "", err
-	}
-	hashed := base64.URLEncoding.EncodeToString(hash.Sum(nil))
-	return hashed, nil
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(hashed), err
 }
 
 func GenerateToken(userID uint) (string, error) {
@@ -76,13 +70,7 @@ func (h *AuthService) LoginUser(email, password string) (string, error) {
 		return "", fmt.Errorf("invalid email or password")
 	}
 
-	// Verify the password
-	hashedPassword, err := HashPassword(password)
-	if err != nil {
-		return "", fmt.Errorf("failed to hash password: %w", err)
-	}
-	log.Printf("Hashed login password: %s", hashedPassword)
-	if user.PasswordHash != hashedPassword {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return "", fmt.Errorf("invalid email or password")
 	}
 

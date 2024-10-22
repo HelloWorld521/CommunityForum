@@ -1,9 +1,8 @@
 package main
 
 import (
-	"community/user/handlers"
-	"community/user/models"
-	"community/user/services"
+	"community/models"
+	"community/routes"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -19,23 +18,12 @@ func main() {
 	}
 
 	// 自动迁移数据库模式
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.User{}, &models.Post{})
 
-	// 初始化 AuthService
-	authService := &services.AuthService{DB: db}
-
-	// 创建 Gin 路由
 	r := gin.Default()
 	r.Use(corsMiddleware())
-
-	// 初始化 AuthHandler 并设置路由
-	authHandler := &handlers.AuthHandler{AuthService: authService}
-	v1 := r.Group("/api/v1")
-	{
-		v1.POST("/register", authHandler.Register)
-		v1.POST("/login", authHandler.Login)
-	}
-
+	// 创建 Gin 路由
+	routes.SetupRoutes(r, db)
 	// 启动服务器
 	if err := r.Run(":8081"); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
